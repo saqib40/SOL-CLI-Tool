@@ -52,7 +52,7 @@ async fn main() -> anyhow::Result<()> {
             commands::check_balance(&pubkey).await?;
         }
         Commands::Keypair { output } => {
-            commands::generate_keypair(&output).await?;
+            commands::generate_keypair2(&output).await?;
         }
         Commands::Airdrop { pubkey, amount } => {
             commands::request_airdrop(&pubkey, amount).await?;

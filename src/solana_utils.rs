@@ -2,15 +2,11 @@
 // and constructing transactions
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::signature::Keypair;
-use std::path::Path;
-use std::fs;
-use std::convert::TryFrom;
 use solana_sdk::{
     pubkey::Pubkey,
     signature::{Signer},
     transaction::Transaction
 };
-use bs58;
 use std::str::FromStr;
 use anyhow::{Result};
 use solana_system_interface::instruction as system_instruction;
@@ -19,16 +15,14 @@ pub fn get_rpc_client() -> RpcClient {
     RpcClient::new("https://api.devnet.solana.com".to_string())
 }
 
-pub fn read_base58_keypair(path: &Path) -> Result<Keypair> {
-    let encoded = fs::read_to_string(path)?;
-    let bytes = bs58::decode(encoded.trim()).into_vec()?;
-    let keypair = Keypair::try_from(&bytes[..])?;
-    Ok(keypair)
+pub fn read_keypair(path: &std::path::Path) -> Result<Keypair> {
+    solana_sdk::signature::read_keypair_file(path)
+        .map_err(|e| anyhow::anyhow!("failed to read keypair file: {}", e))
 }
 
 pub async fn transfer_sol(to: &str, amount: f64, keypair_path: &std::path::Path) -> Result<()> {
     let client = get_rpc_client();
-    let keypair = read_base58_keypair(keypair_path)?;
+    let keypair = read_keypair(keypair_path)?;
     let to_pubkey = Pubkey::from_str(to)?;
     let lamports = (amount * 1_000_000_000.0) as u64;
     let recent_blockhash = client.get_latest_blockhash()?;

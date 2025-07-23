@@ -2,10 +2,9 @@ use std::path::Path;
 use std::fs;
 use crate::solana_utils;
 use std::str::FromStr;
-use bs58;
 
 pub async fn transfer_sol(to: &str, amount: f64, keypair_path: &Path) -> anyhow::Result<()> {
-    solana_utils::transfer_sol(to, amount, keypair_path).await;
+    solana_utils::transfer_sol(to, amount, keypair_path).await?;
     Ok(())
 }
 
@@ -13,16 +12,15 @@ pub async fn check_balance(pubkey: &str) -> anyhow::Result<()> {
     solana_utils::check_balance(pubkey).await
 }
 
-pub async fn generate_keypair(output: &Path) -> anyhow::Result<()> {
-    // Generate a new random keypair (public + private key)
-    // This is your Solana wallet, created in-memory
+pub async fn generate_keypair2(output: &Path) -> anyhow::Result<()> {
     let keypair = solana_sdk::signature::Keypair::new();
-    // Convert keypair to byte array, then encode to base58 string
-    let serialized = bs58::encode(keypair.to_bytes()).into_string();
-
-    fs::write(output, serialized)?;
-
-    println!("Keypair generated and saved to {:?}", output);
+    let keypair_bytes = keypair.to_bytes().to_vec();
+    let json_string = serde_json::to_string(&keypair_bytes)?;
+    fs::write(output, json_string)?;
+    println!(
+        "Keypair generated and saved to {:?} in the standard JSON format.",
+        output
+    );
     Ok(())
 }
 
